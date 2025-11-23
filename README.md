@@ -1,36 +1,33 @@
-# Disk Scheduling Visualizer (OSproject)
+# Disk Scheduling Visualizer — College Project
 
-A small Flask-based web service that visualizes disk scheduling algorithms and returns the service order, seek statistics and a PNG plot as a base64 data URI.
+A small, easy-to-run Flask web app that demonstrates and visualizes common disk scheduling algorithms. Useful for learning how different algorithms affect head movement and seek time.
 
-## Project Structure
+**What this does:** The app accepts a list of disk track requests and a current head position, runs a chosen scheduling algorithm (FCFS, SSTF, SCAN, C-SCAN), and returns the service order, seek statistics, and a PNG plot (as a base64 data URI).
 
-- `app.py`: Flask application implementing the scheduling algorithms and a `/visualize` API endpoint; serves `index.html` at the root.
-- `templates/index.html`: Basic frontend page (not strictly required to use the API).
-- `static/`: Static assets and built frontend files.
+**Designed for:** students and instructors as a demonstration or lab exercise.
 
-## Features
+**Quick Links**
 
-- Implements common disk scheduling algorithms:
-  - `FCFS` (First-Come, First-Served)
-  - `SSTF` (Shortest Seek Time First)
-  - `SCAN` (Elevator)
-  - `C-SCAN` (Circular SCAN)
-- Produces a PNG plot of the service sequence (returned as a base64 data URI).
-- Returns total and average movements and total seek time in milliseconds.
-- CORS is enabled for cross-origin requests.
+- **Run:** `python app.py`
+- **API endpoint:** `POST /visualize`
+- **Project file:** `app.py`
 
-## Requirements
+**Project structure (important files)**
 
-This project requires Python 3.8+ and the following packages:
+- `app.py`: Main Flask server and API logic.
+- `templates/index.html`: Simple frontend (optional).
+- `static/`: Frontend assets.
 
-- `Flask`
-- `matplotlib`
-- `numpy`
-- `flask-cors`
+**Supported algorithms (brief)**
 
-You can install these with pip. Example:
+- **FCFS** — First-Come, First-Served: serve requests in the order received.
+- **SSTF** — Shortest Seek Time First: pick the closest pending request next.
+- **SCAN** — Elevator: head moves in one direction, servicing requests, then reverses.
+- **C-SCAN** — Circular SCAN: like SCAN but jumps back to the start without servicing on the return.
 
-PowerShell:
+Getting started (Windows PowerShell)
+
+1. Create and activate a virtual environment, then install dependencies:
 
 ```powershell
 python -m venv .venv; .\.venv\Scripts\Activate.ps1
@@ -38,51 +35,26 @@ pip install --upgrade pip
 pip install Flask matplotlib numpy flask-cors
 ```
 
-Or a single-line pip command (once venv activated):
+2. Run the app (default port 8088):
 
 ```powershell
-pip install Flask matplotlib numpy flask-cors
-```
-
-## Running the App (locally)
-
-PowerShell commands to run the app locally (default host 0.0.0.0, port 8088):
-
-```powershell
-# from project root (where app.py lives)
+# from project root (where README.md and app.py live)
 python app.py
 ```
 
-Open a browser to `http://localhost:8088/` to view the frontend (if used).
+3. Open `http://localhost:8088/` in a browser to see the frontend (optional), or call the API directly.
 
-## API: `/visualize` (POST)
+API: `POST /visualize` (simple example)
 
-This endpoint accepts a JSON payload describing disk head state and requests. It returns the scheduling sequence, metrics, total seek time, and a base64 PNG image of the plot.
+Expected JSON fields (all strings or numbers accepted; code coerces types):
 
-Request JSON fields (keys used by `app.py`):
+- `CurrentHeadPosition`: integer (e.g. `50`)
+- `RequestQueue`: comma-separated numbers (e.g. `10,20,78,34`)
+- `Algorithm`: `FCFS`, `SSTF`, `SCAN`, or `C-SCAN`
+- `Direction`: `Left` or `Right` (used for SCAN/C-SCAN)
+- `SpeedPerTrackMs`: time per track in ms (optional, default used if missing)
 
-- `CurrentHeadPosition` (int or string): current head position (e.g. `50`).
-- `TotalNumberOfTracks` (int or string, optional): total number of tracks (default 200 in code).
-- `SpeedPerTrackMs` (int or string, optional): ms per track movement (default 10 in code).
-- `RequestQueue` (string): comma-separated list of integer track requests (e.g. `10,20,78,34`).
-- `Algorithm` (string): one of `FCFS`, `SSTF`, `SCAN`, `C-SCAN` (the code also accepts some longer labels like `FCFS (First-Come, First-Served)`).
-- `Direction` (string): `Left` or `Right` (controls initial head movement for SCAN/C-SCAN).
-
-Example POST (curl):
-
-```bash
-curl -X POST http://localhost:8088/visualize \
-  -H "Content-Type: application/json" \
-  -d '{
-    "CurrentHeadPosition": "50",
-    "RequestQueue": "10,20,78,34",
-    "Algorithm": "SSTF",
-    "Direction": "Right",
-    "SpeedPerTrackMs": "10"
-  }'
-```
-
-Example PowerShell using `Invoke-RestMethod`:
+Example using PowerShell (`Invoke-RestMethod`):
 
 ```powershell
 $payload = @{
@@ -96,27 +68,34 @@ $payload = @{
 Invoke-RestMethod -Uri http://localhost:8088/visualize -Method Post -Body $payload -ContentType 'application/json'
 ```
 
-Response format (JSON):
+Or with `curl`:
 
-- `algorithm_results`: object with `sequence` (list), `total_movements` (int) and `average_movements` (float).
-- `total_seek_time_ms`: computed as `total_movements * SpeedPerTrackMs`.
-- `plot_image`: data URI string like `data:image/png;base64,<base64-payload>`.
+```bash
+curl -X POST http://localhost:8088/visualize \
+  -H "Content-Type: application/json" \
+  -d '{"CurrentHeadPosition":"50","RequestQueue":"10,20,78,34","Algorithm":"SSTF","Direction":"Right","SpeedPerTrackMs":"10"}'
+```
 
-## Notes & Tips
+Response (JSON) includes:
 
-- `matplotlib.use('Agg')` is set so the server can render plots headlessly (no display required).
-- Input parsing in `app.py` expects many values as strings and attempts to coerce them to integers; malformed values will default (e.g. head defaults to `0`, tracks default to `200`).
-- The server listens on port `8088` by default (see `app.run()` in `app.py`).
-- CORS is enabled for `*` origins which is convenient for development but consider restricting origins for production.
+- `algorithm_results`: `{ sequence: [...], total_movements: n, average_movements: x }`
+- `total_seek_time_ms`: integer
+- `plot_image`: `data:image/png;base64,...` (plot of head movement)
 
-## Troubleshooting
+How it helps your project / report
 
-- If you see errors when importing modules, ensure your virtual environment is active and required packages are installed.
-- If plots are blank or missing, confirm the request `sequence` is non-empty and that `matplotlib` saved the image bytes properly.
+- Use the outputs to compare algorithms: total movements and seek time are easy metrics to tabulate.
+- Save the returned `plot_image` (decode base64) for reports or slides.
 
-## License & Attribution
+Troubleshooting
 
-This repository is a small teaching/demo project. Adapt freely for educational purposes.
+- If imports fail, ensure your virtual env is active and dependencies installed.
+- If responses are missing fields, check that `RequestQueue` parses to integers (comma-separated) and `CurrentHeadPosition` is numeric.
+- The app sets `matplotlib` to headless mode (`Agg`) so it works on servers without a display.
 
----
+Next steps (optional)
 
+- I can add a `requirements.txt` for exact dependencies.
+- I can show an example Jupyter notebook that calls the API and visualizes results.
+
+If you want, I can also run the app here and show a sample API call result. Review this README and tell me any extra details to include for your assignment (e.g., how you'll be graded, required screenshots, or output format).
