@@ -93,9 +93,4 @@ Troubleshooting
 - If responses are missing fields, check that `RequestQueue` parses to integers (comma-separated) and `CurrentHeadPosition` is numeric.
 - The app sets `matplotlib` to headless mode (`Agg`) so it works on servers without a display.
 
-Next steps (optional)
 
-- I can add a `requirements.txt` for exact dependencies.
-- I can show an example Jupyter notebook that calls the API and visualizes results.
-
-If you want, I can also run the app here and show a sample API call result. Review this README and tell me any extra details to include for your assignment (e.g., how you'll be graded, required screenshots, or output format).
